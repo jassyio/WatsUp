@@ -8,7 +8,7 @@ const mongoose = require("mongoose");
 // Load environment variables
 dotenv.config();
 
-// MongoDB Schema and Model
+// MongoDB Schema and Models
 const messageSchema = new mongoose.Schema({
     user: { type: String, required: true },
     message: { type: String, required: true },
@@ -16,6 +16,15 @@ const messageSchema = new mongoose.Schema({
 });
 
 const Message = mongoose.model("Message", messageSchema);
+
+// Sample User Data (to simulate users in the database)
+const users = [
+    { id: 1, username: 'User1', avatar: 'https://via.placeholder.com/50' },
+    { id: 2, username: 'User2', avatar: 'https://via.placeholder.com/50' },
+    { id: 3, username: 'User3', avatar: 'https://via.placeholder.com/50' },
+    { id: 4, username: 'User4', avatar: 'https://via.placeholder.com/50' },
+    { id: 5, username: 'User5', avatar: 'https://via.placeholder.com/50' },
+];
 
 const app = express();
 const server = http.createServer(app);
@@ -45,6 +54,11 @@ io.on("connection", (socket) => {
 
     // Listen for messages from the client
     socket.on("message", (msg) => {
+        if (!msg.user || !msg.message) {
+            console.error("Missing user or message");
+            return;
+        }
+
         console.log("Message received:", msg);
 
         // Save the message to MongoDB
@@ -58,12 +72,18 @@ io.on("connection", (socket) => {
             .then(() => console.log("Message saved to DB"))
             .catch((err) => console.error("Error saving message:", err));
 
-        io.emit("message", msg); // Broadcast the message to all clients
+        // Broadcast the message to all clients
+        io.emit("message", msg);
     });
 
     socket.on("disconnect", () => {
         console.log("A user disconnected:", socket.id);
     });
+});
+
+// Route to get users (simulating database users)
+app.get("/users", (req, res) => {
+    res.status(200).json(users);
 });
 
 // Basic API route for testing
