@@ -1,109 +1,171 @@
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const http = require("http");
-const { Server } = require("socket.io");
-const mongoose = require("mongoose");
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const http = require('http');
+const { Server } = require('socket.io');
+const mongoose = require('mongoose');
+const { User, Message } = require('./models.js'); // Import User and Message models
 
-// Load environment variables
 dotenv.config();
-
-// MongoDB Schema and Models
-const messageSchema = new mongoose.Schema({
-    user: { type: String, required: true },
-    message: { type: String, required: true },
-    timestamp: { type: Date, default: Date.now },
-});
-
-const Message = mongoose.model("Message", messageSchema);
-
-// Sample User Data (to simulate users in the database)
-const users = [
-    { id: 1, username: 'User1', avatar: 'https://via.placeholder.com/50' },
-    { id: 2, username: 'User2', avatar: 'https://via.placeholder.com/50' },
-    { id: 3, username: 'User3', avatar: 'https://via.placeholder.com/50' },
-    { id: 4, username: 'User4', avatar: 'https://via.placeholder.com/50' },
-    { id: 5, username: 'User5', avatar: 'https://via.placeholder.com/50' },
-];
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: {
-        origin: "*", // Replace '*' with your frontend URL in production
-        methods: ["GET", "POST"],
-    },
+  cors: {
+    origin: "*", // Replace '*' with your frontend URL in production
+    methods: ["GET", "POST"],
+  },
 });
 
-// Middleware
 app.use(express.json());
 app.use(cors());
 
 // MongoDB Connection
-mongoose
-    .connect(process.env.MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    })
-    .then(() => console.log("Connected to MongoDB"))
-    .catch((err) => console.error("MongoDB connection error:", err));
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => console.log("Connected to MongoDB"))
+  .catch(err => console.error("MongoDB connection error:", err));
 
-// Socket.IO
+// User Registration (Sign Up with Username)
+app.post("/signup", async (req, res) => {
+  const { email, username } = req.body;
+
+  // Check if email exists
+  const existingUserByEmail = await User.findOne({ email });
+  if (!existingUserByEmail) {
+    return res.status(404).json({ error: 'Email not found. Please log in first.' });
+  }
+
+  // Check if username exists
+  const existingUserByUsername = await User.findOne({ username });
+  if (existingUserByUsername) {
+    return res.status(400).json({ error: 'Username already taken' });
+  }
+
+  // Update the user's username
+  existingUserByEmail.username = username;
+  await existingUserByEmail.save();
+
+  res.status(201).json({ message: 'User created successfully', user: existingUserByEmail });
+});
+
+// User Login (Login with Email)
+app.post("/login/email", async (req, res) => {
+  const { email } = req.body;
+
+  // Check if the email exists in the database
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ error: 'Email not found. Please sign up first.' });
+  }
+
+  res.status(200).json({ message: 'Email verified successfully' });
+});
+
+// User Login (Login with Username)
+app.post("/login", async (req, res) => {
+  const { username } = req.body;
+
+  // Find the user by username
+  const user = await User.findOne({ username });
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  // Send back the user data
+  res.status(200).json({ user });
+});
+
+// Get All Users (For displaying in the frontend)
+app.get("/users", async (req, res) => {
+  const users = await User.find(); // Fetch all users from DB
+  res.status(200).json(users);
+});
+
+// Send Message
+app.post("/message", async (req, res) => {
+  const { senderUsername, receiverUsername, message } = req.body;
+
+  // Find sender and receiver from the database
+  const sender = await User.findOne({ username: senderUsername });
+  const receiver = await User.findOne({ username: receiverUsername });
+
+  if (!sender || !receiver) {
+    return res.status(404).json({ error: 'Sender or receiver not found' });
+  }
+
+  // Create a new message
+  const newMessage = new Message({
+    sender: sender._id,
+    receiver: receiver._id,
+    message,
+  });
+
+  await newMessage.save();
+
+  res.status(201).json({ message: 'Message sent successfully' });
+});
+
+// Socket.IO Setup
 io.on("connection", (socket) => {
-    console.log("A user connected:", socket.id);
+  console.log("A user connected:", socket.id);
 
-    // Listen for messages from the client
-    socket.on("message", (msg) => {
-        if (!msg.user || !msg.message) {
-            console.error("Missing user or message");
-            return;
-        }
+  socket.on("join", async (username) => {
+    const user = await User.findOne({ username });
+    if (!user) {
+      socket.emit("error", { message: "User not found" });
+      return;
+    }
+    socket.username = username;
+    socket.userId = user._id;
+    io.emit("users", await User.find()); // Emit updated user list to everyone
+  });
 
-        console.log("Message received:", msg);
+  socket.on("message", async (msg) => {
+    const sender = await User.findOne({ username: msg.sender });
+    const receiver = await User.findOne({ username: msg.receiver });
 
-        // Save the message to MongoDB
-        const newMessage = new Message({
-            user: msg.user,
-            message: msg.message,
-        });
+    if (!sender || !receiver) {
+      return;
+    }
 
-        newMessage
-            .save()
-            .then(() => console.log("Message saved to DB"))
-            .catch((err) => console.error("Error saving message:", err));
-
-        // Broadcast the message to all clients
-        io.emit("message", msg);
+    // Save the message to the database
+    const newMessage = new Message({
+      sender: sender._id,
+      receiver: receiver._id,
+      message: msg.message,
     });
 
-    socket.on("disconnect", () => {
-        console.log("A user disconnected:", socket.id);
-    });
+    await newMessage.save();
+
+    // Emit the message to both users
+    io.emit("message", msg);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("A user disconnected:", socket.id);
+  });
 });
 
-// Route to get users (simulating database users)
-app.get("/users", (req, res) => {
-    res.status(200).json(users);
-});
-
-// Basic API route for testing
+// Basic API Route
 app.get("/", (req, res) => {
-    res.status(200).json({ message: "Welcome to the WhatsUp backend!" });
+  res.status(200).json({ message: "Welcome to the WhatsUp backend!" });
 });
 
 // 404 Handler
 app.use((req, res, next) => {
-    res.status(404).json({ error: "Route not found" });
+  res.status(404).json({ error: "Route not found" });
 });
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: "Internal Server Error" });
+  console.error(err.stack);
+  res.status(500).json({ error: "Internal Server Error" });
 });
 
 // Start Server
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
