@@ -1,22 +1,27 @@
-let notificationHandler = null;
+import { createContext, useState, useContext } from "react";
+import { setNotificationHandler } from "../services/notificationService";
 
-/**
- * Sets the handler for sending notifications.
- * @param {function} handler - A function to handle adding notifications.
- */
-export const setNotificationHandler = (handler) => {
-    notificationHandler = handler;
+const NotificationContext = createContext();
+
+export const NotificationProvider = ({ children }) => {
+    const [notifications, setNotifications] = useState([]);
+
+    const addNotification = (message, type = "info") => {
+        setNotifications((prev) => [...prev, { message, type, id: Date.now() }]);
+    };
+
+    const removeNotification = (id) => {
+        setNotifications((prev) => prev.filter((notification) => notification.id !== id));
+    };
+
+    // Set the notification handler
+    setNotificationHandler(addNotification);
+
+    return (
+        <NotificationContext.Provider value={{ notifications, addNotification, removeNotification }}>
+            {children}
+        </NotificationContext.Provider>
+    );
 };
 
-/**
- * Adds a notification.
- * @param {string} message - The notification message.
- * @param {string} type - The type of notification (e.g., "success", "error", "info").
- */
-export const notify = (message, type = "info") => {
-    if (notificationHandler) {
-        notificationHandler(message, type);
-    } else {
-        console.warn("Notification handler is not set. Call 'setNotificationHandler' first.");
-    }
-};
+export const useNotification = () => useContext(NotificationContext);
