@@ -1,29 +1,20 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
+import React from "react";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
-
   return (
-    <nav className="navbar">
-      <div className="logo">
-        <Link to="/">WhatXapp</Link>
+    <header>
+      <div className="left-content">
+        <div className="profile-icon"></div>
+        <h1>WhatXapp</h1>
       </div>
-      <div className="nav-links">
-        {user ? (
-          <>
-            <Link to="/chat">Chat</Link>
-            <button onClick={logout}>Logout</button>
-          </>
-        ) : (
-          <>
-            <Link to="/login">Login</Link>
-            <Link to="/signup">Sign Up</Link>
-          </>
-        )}
-      </div>
-    </nav>
+      <nav className="icons">
+        <Link to="/home">Home</Link>
+        <Link to="/profile">Profile</Link>
+        <Link to="/chatroom">Chats</Link>
+        <Link to="/login">Logout</Link>
+      </nav>
+    </header>
   );
 };
 

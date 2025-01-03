@@ -1,28 +1,34 @@
 import React from "react";
-import { useChat } from "../hooks/useChat";
 
-const ChatRoom = () => {
-    const { messages, addMessage } = useChat();
+const ChatRoom = ({ activeChat }) => {
+  if (!activeChat) {
+    return <div id="active-chat-container">Select a chat to start messaging.</div>;
+  }
 
-    const handleSend = (e) => {
-        e.preventDefault();
-        addMessage({ text: e.target.message.value });
-        e.target.reset();
-    };
-
-    return (
-        <div>
-            <div>
-                {messages.map((msg, idx) => (
-                    <p key={idx}>{msg.text}</p>
-                ))}
-            </div>
-            <form onSubmit={handleSend}>
-                <input type="text" name="message" placeholder="Type a message" />
-                <button type="submit">Send</button>
-            </form>
+  return (
+    <div id="active-chat-container">
+      <header>
+        <div className="active-chat-info">
+          <div className="active-chat-icon"></div>
+          <div className="active-chat-name">{activeChat.name}</div>
         </div>
-    );
+        <div className="header-icons">
+          <i className="fas fa-video"></i>
+          <i className="fas fa-phone"></i>
+          <i className="fas fa-ellipsis-v"></i>
+        </div>
+      </header>
+      <main>
+        {/* Add messages here */}
+      </main>
+      <div className="input-area">
+        <i className="fas fa-paperclip"></i>
+        <input type="text" placeholder="Type a message" />
+        <i className="fas fa-smile"></i>
+        <i className="fas fa-microphone"></i>
+      </div>
+    </div>
+  );
 };
 
 export default ChatRoom;

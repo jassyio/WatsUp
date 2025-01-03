@@ -1,18 +1,22 @@
-import { createContext, useState } from "react";
+// src/contexts/ThemeContext.jsx
+import React, { createContext, useState, useContext } from 'react';
 
-// Correct the casing here, it should be "ThemeContext" instead of "Themecontext"
-export const ThemeContext = createContext();
+const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-    const [theme, setTheme] = useState("light"); // Default theme is light
+  const [theme, setTheme] = useState('light');
 
-    const toggleTheme = () => {
-        setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
-    };
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
 
-    return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
-            {children}
-        </ThemeContext.Provider>
-    );
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      <div className={theme === 'dark' ? 'dark-mode' : ''}>
+        {children}
+      </div>
+    </ThemeContext.Provider>
+  );
 };
+
+export const useTheme = () => useContext(ThemeContext);

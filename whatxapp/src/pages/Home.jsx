@@ -1,14 +1,14 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
 
 const Home = () => {
   return (
-    <div className="home">
+    <div className="home-page">
       <h1>Welcome to WhatXapp</h1>
-      <p>The best way to stay connected with friends and family</p>
-      <div className="home-links">
-        <Link to="/login">Login</Link>
-        <Link to="/signup">Sign Up</Link>
+      <p>Select an option to continue:</p>
+      <div className="navigation-links">
+        <Link to="/profile">Go to Profile</Link>
+        <Link to="/chatroom">Start Chatting</Link>
       </div>
     </div>
   );
