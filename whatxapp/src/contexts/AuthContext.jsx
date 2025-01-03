@@ -1,46 +1,16 @@
-import React, { createContext, useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/authService';
+import { createContext, useState } from "react";
 
-const AuthContext = createContext();
-
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const navigate = useNavigate();
+    const [user, setUser] = useState(null);
 
-  const login = async (email, password) => {
-    const response = await authService.login(email, password);
-    if (response.success) {
-      setUser(response.user);
-      navigate('/chat');
-    } else {
-      console.log(response.message);
-    }
-  };
+    const login = (userData) => setUser(userData);
+    const logout = () => setUser(null);
 
-  const signup = async (email, password) => {
-    const response = await authService.signup(email, password);
-    if (response.success) {
-      setUser(response.user);
-      navigate('/chat');
-    } else {
-      console.log(response.message);
-    }
-  };
-
-  const logout = () => {
-    setUser(null);
-    navigate('/');
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, login, signup, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+    return (
+        <AuthContext.Provider value={{ user, login, logout }}>
+            {children}
+        </AuthContext.Provider>
+    );
 };
-

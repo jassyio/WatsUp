@@ -1,33 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { useChat } from '../hooks/useChat';
-import ChatBox from '../components/Chat/ChatBox';
-import MessageInput from '../components/Chat/MessageInput';
+import React from "react";
+import { useChat } from "../hooks/useChat";
 
 const ChatRoom = () => {
-  const { roomId } = useParams();
-  const { messages, getMessages } = useChat();
-  const [loading, setLoading] = useState(true);
+    const { messages, addMessage } = useChat();
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-      await getMessages(roomId);
-      setLoading(false);
+    const handleSend = (e) => {
+        e.preventDefault();
+        addMessage({ text: e.target.message.value });
+        e.target.reset();
     };
-    fetchMessages();
-  }, [roomId, getMessages]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <div className="chat-room">
-      <ChatBox messages={messages} />
-      <MessageInput roomId={roomId} />
-    </div>
-  );
+    return (
+        <div>
+            <div>
+                {messages.map((msg, idx) => (
+                    <p key={idx}>{msg.text}</p>
+                ))}
+            </div>
+            <form onSubmit={handleSend}>
+                <input type="text" name="message" placeholder="Type a message" />
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    );
 };
 
 export default ChatRoom;
-

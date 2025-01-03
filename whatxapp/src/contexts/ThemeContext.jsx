@@ -1,26 +1,18 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useState } from "react";
 
-const ThemeContext = createContext();
-
-export const useTheme = () => {
-  return useContext(ThemeContext);
-};
+// Correct the casing here, it should be "ThemeContext" instead of "Themecontext"
+export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+    const [theme, setTheme] = useState("light"); // Default theme is light
 
-  useEffect(() => {
-    document.body.className = theme + '-theme';
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    const toggleTheme = () => {
+        setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
+    };
 
-  const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
-  };
-
-  return (
-    <Themecontext.Provider value={{ theme, toggleTheme }}>
-      {children}
-    </Themecontext.Provider>
-  );
+    return (
+        <ThemeContext.Provider value={{ theme, toggleTheme }}>
+            {children}
+        </ThemeContext.Provider>
+    );
 };
