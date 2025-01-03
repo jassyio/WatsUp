@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 
-import { ThemeProvider } from './contexts/Themecontext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';  // Added for notifications
 import { notificationService } from './services/notificationService';  // Added for notification handling
 
-import Navbar from './components/layout/Navbar';
-import Footer from './components/layout/Footer';
-import Sidebar from './components/layout/Sidebar';
+import Navbar from './components/Layout/Navbar';
+import Footer from './components/Layout/Footer';
+import Sidebar from './components/Layout/Sidebar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
