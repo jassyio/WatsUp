@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useChat } from '../../contexts/Chatcontext';
+import { useChat } from '../../contexts/ChatContext';
 import MessageTypingIndicator from '../Shared/MessageTypingIndicator';
 
 const ChatBox = () => {
