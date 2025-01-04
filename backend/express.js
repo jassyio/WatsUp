@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import http from "http";
 import { Server } from "socket.io";
-import connectDB from './config/db.js';
+import connectDB from "./config/db.js";
 
 import socketHandler from "./socket.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -11,13 +11,22 @@ import chatRoutes from "./routes/chatRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 
+dotenv.config(); // Load environment variables
 
-dotenv.config();
-
+// Initialize Express app and server
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
 
+// Set up Socket.IO
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || "*", // Replace * with your frontend URL in production
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+  },
+});
+
+// Connect to the database
 connectDB();
 
 // Middleware
@@ -30,9 +39,16 @@ app.use("/api/chats", chatRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/notifications", notificationRoutes);
 
-// Socket.io
+// Socket.IO logic
 socketHandler(io);
 
-// Start server
+// Default Route
+app.get("/", (req, res) => {
+  res.status(200).send("Server is running...");
+});
+
+// Start the server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () =>
+  console.log(`✅ Server running on http://localhost:${PORT}`)
+);

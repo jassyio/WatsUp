@@ -1,68 +1,123 @@
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
+/* Global Styles */
 body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f8f8f8;
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+.app-container {
+  @apply flex flex-col h-screen;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+.main-content {
+  @apply flex-1 p-5 bg-gray-100;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+footer {
+  @apply text-center p-3 bg-gray-200;
+}
+
+/* Navbar */
+.navbar {
+  @apply bg-whatsapp-dark text-white py-3 px-6 shadow-md;
+}
+
+.navbar-title {
+  @apply text-lg font-bold;
+}
+
+.navbar-button {
+  @apply bg-whatsapp px-4 py-2 rounded text-sm font-medium hover:bg-whatsapp-dark;
+}
+
+/* Chat Room */
+.sidebar {
+  @apply w-1/4 bg-whatsapp-dark text-white p-4;
+}
+
+.sidebar-title {
+  @apply font-bold text-lg mb-4;
+}
+
+.sidebar-item {
+  @apply mb-2 p-2 rounded hover:bg-whatsapp cursor-pointer;
+}
+
+.chat-header {
+  @apply bg-whatsapp-dark text-white p-4;
+}
+
+.chat-messages {
+  @apply flex-1 p-4 overflow-y-auto;
+}
+
+.chat-bubble {
+  @apply p-3 rounded-lg max-w-xs;
+}
+
+.chat-bubble-sent {
+  @apply bg-whatsapp text-white;
+}
+
+.chat-bubble-received {
+  @apply bg-whatsapp-light text-gray-800;
+}
+
+.chat-input {
+  @apply flex items-center bg-gray-200 p-4;
+}
+
+.chat-textbox {
+  @apply flex-1 bg-white p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-whatsapp-dark;
+}
+
+.chat-send-button {
+  @apply ml-4 bg-whatsapp text-white px-4 py-2 rounded-lg hover:bg-whatsapp-dark;
+}
+
+/* Login Form */
+.login-container {
+  @apply flex items-center justify-center h-screen bg-gray-100;
+}
+
+.login-card {
+  @apply bg-white shadow-lg rounded-lg p-6 w-96;
+}
+
+.login-title {
+  @apply text-2xl font-bold text-center text-whatsapp-dark mb-6;
+}
+
+.login-input {
+  @apply w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-whatsapp;
+}
+
+.login-button {
+  @apply w-full bg-whatsapp text-white py-3 rounded-lg font-medium hover:bg-whatsapp-dark;
+}
+
+/* Profile Page */
+.profile-container {
+  @apply flex items-center justify-center h-screen bg-gray-100;
+}
+
+.profile-card {
+  @apply bg-white shadow-lg rounded-lg p-6 w-96;
+}
+
+.profile-title {
+  @apply text-2xl font-bold text-center text-whatsapp-dark mb-4;
+}
+
+.profile-field {
+  @apply bg-gray-200 p-2 rounded;
+}
+
+.profile-button {
+  @apply w-full bg-whatsapp text-white py-3 rounded-lg font-medium hover:bg-whatsapp-dark;
 }

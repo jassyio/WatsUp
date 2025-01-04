@@ -1,21 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const Navbar = () => {
-  return (
-    <header>
-      <div className="left-content">
-        <div className="profile-icon"></div>
-        <h1>WhatXapp</h1>
-      </div>
-      <nav className="icons">
-        <Link to="/home">Home</Link>
-        <Link to="/profile">Profile</Link>
-        <Link to="/chatroom">Chats</Link>
-        <Link to="/login">Logout</Link>
-      </nav>
-    </header>
-  );
-};
+const Navbar = () => (
+  <nav className="bg-whatsapp-dark text-white py-3 px-6 shadow-md">
+    <div className="flex justify-between items-center">
+      <h1 className="text-lg font-bold">WhatXapp</h1>
+      <button className="bg-whatsapp px-4 py-2 rounded text-sm font-medium hover:bg-whatsapp-dark">
+        Logout
+      </button>
+    </div>
+  </nav>
+);
 
 export default Navbar;
+
