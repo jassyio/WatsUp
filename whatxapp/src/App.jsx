@@ -1,22 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { UserProvider, UserContext } from './context/UserContext';
 import { ChatProvider } from './context/ChatContext';
-import Home from './pages/Home';
-import ChatPage from './pages/ChatPage';
-import NotFound from './pages/NotFound';
+import AppRouter from './router';
 import Header from './components/Shared/Header';
 import Sidebar from './components/Navigation/Sidebar';
 import { Box, useMediaQuery, CircularProgress } from '@mui/material';
-import CallPage from './pages/CallPage';
-import StatusPage from './pages/StatusPage';
-import SettingsPage from './pages/SettingsPage';
-import AppRouter from './router';
 import './index.css';
-import { useContext } from 'react';
 
 const theme = createTheme();
 
@@ -33,23 +26,21 @@ function App() {
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
-            setUser(JSON.parse(storedUser));
+            try {
+                setUser(JSON.parse(storedUser));
+            } catch (e) {
+                console.error("Invalid user data in localStorage:", e);
+            }
         }
         setLoading(false);
     }, [setUser]);
 
-    useEffect(() => {
-        if (user) {
-            localStorage.setItem('user', JSON.stringify(user));
-        } else {
-            localStorage.removeItem('user');
-        }
-    }, [user]);
-
     if (loading) {
-        return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-            <CircularProgress />
-        </Box>;
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <CircularProgress />
+            </Box>
+        );
     }
 
     return (
@@ -67,7 +58,6 @@ function App() {
                                     ) : (
                                         <Sidebar open={true} onClose={() => { }} variant="persistent" />
                                     )}
-
                                     <Box component="main" sx={{ flexGrow: 1, p: 3, width: '100%' }}>
                                         {user ? <AppRouter /> : <Navigate to="/" />}
                                     </Box>
