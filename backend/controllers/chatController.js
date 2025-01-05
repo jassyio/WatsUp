@@ -1,33 +1,70 @@
-// src/controllers/chatController.js
-import asyncHandler from 'express-async-handler';
-import Chat from '../models/chatModel.js';
+const Chat = require('../models/chatModel');
+const User = require('../models/userModel');
 
-// @desc    Get user chats
-// @route   GET /api/chats
-// @access  Private
-export const getChats = asyncHandler(async (req, res) => {
-  const chats = await Chat.find({ users: { $in: [req.user._id] } }).populate('users', 'name email');
-  res.json(chats);
-});
+const accessChat = async (req, res, next) => {
+    const { userId } = req.body;
 
-// @desc    Send a message
-// @route   POST /api/chats/:chatId/messages
-// @access  Private
-export const sendMessage = asyncHandler(async (req, res) => {
-  const { content } = req.body;
-  const chat = await Chat.findById(req.params.chatId);
+    if (!userId) {
+        console.log("UserId param not sent with request");
+        return res.sendStatus(400);
+    }
 
-  if (chat) {
-    const message = {
-      sender: req.user._id,
-      content,
-      timestamp: new Date(),
-    };
-    chat.messages.push(message);
-    await chat.save();
-    res.status(201).json(message);
-  } else {
-    res.status(404);
-    throw new Error('Chat not found');
-  }
-});
+    var isChat = await Chat.find({
+        isGroupChat: false,
+        $and: [
+            { users: { $elemMatch: { $eq: req.user._id } } },
+            { users: { $elemMatch: { $eq: userId } } },
+        ],
+    })
+        .populate("users", "-password")
+        .populate("latestMessage");
+
+    isChat = await User.populate(isChat, {
+        path: "latestMessage.sender",
+        select: "username",
+    });
+
+    if (isChat.length > 0) {
+        res.send(isChat[0]);
+    } else {
+        var chatData = {
+            chatName: "sender",
+            isGroupChat: false,
+            users: [req.user._id, userId],
+        };
+
+        try {
+            const createdChat = await Chat.create(chatData);
+            const FullChat = await Chat.findOne({ _id: createdChat._id }).populate(
+                "users",
+                "-password"
+            );
+            res.status(200).json(FullChat);
+        } catch (error) {
+            res.status(400);
+            throw new Error(error.message);
+        }
+    }
+};
+
+const fetchChats = async (req, res, next) => {
+    try {
+        Chat.find({ users: { $elemMatch: { $eq: req.user._id } } })
+            .populate("users", "-password")
+            .populate("groupAdmin", "-password")
+            .populate("latestMessage")
+            .sort({ updatedAt: -1 })
+            .then(async (results) => {
+                results = await User.populate(results, {
+                    path: "latestMessage.sender",
+                    select: "username",
+                });
+                res.status(200).send(results);
+            });
+    } catch (error) {
+        res.status(400);
+        throw new Error(error.message);
+    }
+};
+
+module.exports = { accessChat, fetchChats };

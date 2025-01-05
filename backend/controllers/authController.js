@@ -1,54 +1,46 @@
-// src/controllers/authController.js
-import asyncHandler from 'express-async-handler';
-import User from '../models/userModel.js';
-import generateToken from '../utils/generateToken.js';
+const User = require('../models/userModel');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-// @desc    Register a new user
-// @route   POST /api/auth/register
-// @access  Public
-export const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+const registerUser = async (req, res, next) => {
+    try {
+        const { username, password } = req.body;
 
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    res.status(400);
-    throw new Error('User already exists');
-  }
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+            return res.status(400).json({ message: 'Username already exists' });
+        }
 
-  const user = await User.create({ name, email, password });
-  if (user) {
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      token: generateToken(user._id),
-    });
-  } else {
-    res.status(400);
-    throw new Error('Invalid user data');
-  }
-});
-export const verifyUser = (req, res) => {
-    // Logic to verify the user
-    res.json({ message: 'User verified' });
-  };
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ username, password: hashedPassword });
+        await newUser.save();
 
-// @desc    Login user
-// @route   POST /api/auth/login
-// @access  Public
-export const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+        res.status(201).json({ message: 'User registered successfully' });
+    } catch (error) {
+        next(error);
+    }
+};
 
-  const user = await User.findOne({ email });
-  if (user && (await user.matchPassword(password))) {
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      token: generateToken(user._id),
-    });
-  } else {
-    res.status(401);
-    throw new Error('Invalid email or password');
-  }
-});
+const loginUser = async (req, res, next) => {
+    try {
+        const { username, password } = req.body;
+
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        const isPasswordMatch = await bcrypt.compare(password, user.password);
+        if (!isPasswordMatch) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' }); // Sign the token
+
+        res.json({ token, user });
+    } catch (error) {
+        next(error);
+    }
+};
+
+module.exports = { registerUser, loginUser };

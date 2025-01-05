@@ -1,11 +1,11 @@
-// src/routes/chatRoutes.js
-import express from 'express';
-import { getChats, sendMessage } from '../controllers/chatController.js';
-import { protect } from '../middleware/authMiddleware.js';
-
+const express = require("express");
 const router = express.Router();
+const {
+    accessChat,
+    fetchChats,
+} = require("../controllers/chatController");
+const authMiddleware = require("../middleware/authMiddleware");
 
-router.get('/', protect, getChats);
-router.post('/:chatId/messages', protect, sendMessage);
+router.route("/").post(authMiddleware, accessChat).get(authMiddleware, fetchChats);
 
-export default router;
+module.exports = router;
