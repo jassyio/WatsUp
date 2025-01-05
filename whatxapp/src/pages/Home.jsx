@@ -1,7 +1,8 @@
 import React, { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
+import { Box } from '@mui/material';
 import Login from '../components/Auth/Login';
-import { UserContext } from '../context/UserContext';
+import  UserContext from '../context/UserContext';
 
 const Home = () => {
     const { user } = useContext(UserContext);
@@ -11,7 +12,14 @@ const Home = () => {
     }
 
     return (
-        <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>
+        <Box
+            sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh',
+            }}
+        >
             <Login />
         </Box>
     );

@@ -1,9 +1,9 @@
 import React, { createContext, useState } from 'react';
 
-const UserContext = createContext();
+export const UserContext = createContext();
 
-const UserProvider = ({ children }) => {
-    const [user, setUser] = useState(null); // Initial user state
+export const UserProvider = ({ children }) => {
+    const [user, setUser] = useState(null);
 
     return (
         <UserContext.Provider value={{ user, setUser }}>
@@ -11,5 +11,3 @@ const UserProvider = ({ children }) => {
         </UserContext.Provider>
     );
 };
-
-export { UserContext, UserProvider };
